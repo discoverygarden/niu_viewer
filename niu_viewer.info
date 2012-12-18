@@ -1,0 +1,4 @@
+name = "NIU Viewer"
+description = "Quick viewer"
+dependencies[] = fedora_repository
+core = 6.x

@@ -1,0 +1,50 @@
+<?php
+function niu_viewer_init() {
+  drupal_add_js(drupal_get_path('module', 'niu_viewer') . '/niu_viewer.js');
+}
+
+function niu_viewer_islandora_tabs_alter($cmodels_tabs, $params) {
+  /*
+  if ($_GET['debug'] == 'true') {
+    echo "Tabs<br/><pre>";
+    print_r($cmodels_tabs);
+    echo "</pre>";
+    echo "Params<br/><pre>";
+    print_r($params);
+    echo "</pre>";
+  }
+  */
+
+/*
+  // Terrible hack for demo purposes only
+  $obj_url = 'http://polaris.lib.niu.edu:8080/fedora/objects/' . $params['pid'] . '/datastreams/OBJ/content';
+  $obj = file_get_contents($obj_url);
+  if ($obj != $params['pid']) {
+    $cmodels_tabs['fedora_object_details']['tabset']['view']['dc']['#value'] = '<iframe src="' . $obj_url . '" width="100%" height="220px"></iframe>' . $cmodels_tabs['fedora_object_details']['tabset']['view']['dc']['#value'];
+  }
+*/
+
+  // Terrible hack for demo purposes only
+  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+  $item = new Fedora_Item($params['pid']);
+  $mime = $item->get_mimetype_of_datastream("OBJ");
+
+//  if (strpos($params['pid'] , "niu-") === FALSE) {
+  if ($mime !== "text/html") {
+    return;
+  }
+  $stream = $item->get_datastream_dissemination("OBJ");
+  if ($stream !== NULL) {
+    $cmodels_tabs['view'] = array(
+      '#type' => 'tabpage',
+      '#title' => t('View'),
+      '#content' => utf8_encode($stream),
+      '#weight' => -10,
+    );
+  }
+
+  // additional correction for pdf solution pack
+  if ($cmodels_tabs['first_tab']['#title'] == "PDF") {
+    $cmodels_tabs['second_tab']['#content'] = str_replace("/OBJ/", "/PDF/", $cmodels_tabs['second_tab']['#content']);
+  }
+}
