@@ -1,0 +1,7 @@
+name = "NIU Viewer"
+description = "Quick viewer"
+dependencies[] = islandora
+core = 7.x
+version = 7.x-dev
+stylesheets[all][] = css/niu_artfl.theme.css
+

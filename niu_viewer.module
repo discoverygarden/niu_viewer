@@ -1,0 +1,90 @@
+<?php
+
+/**
+* @file
+* Callbacks and hooks for this module.
+* Intentionally hardcodes roles when building UI.
+* This is a custom module it doesn't need the configurability of permissions.
+*/
+
+/**
+* Implements hook_theme().
+*/
+function niu_viewer_theme($existing, $type, $theme, $path) {
+  return array(
+    'niu_artfl' => array(
+      'template' => 'templates/niu_artfl',
+      'pattern' => 'niu_artfl__',
+      'variables' => array('object' => NULL),
+    ),
+  );
+}
+
+function niu_viewer_niu_objects_cmodel_islandora_view_object($object, $apage_number, $page_size) {
+  $output = theme('niu_artfl', array('object' => $object));
+  $output = $object['OBJ']->content . $output;
+  return array('' => $output);
+}
+
+function niu_viewer_preprocess_niu_artfl(&$variables) {
+  module_load_include('inc', 'islandora', 'includes/datastream');
+  drupal_add_js('misc/form.js');
+  drupal_add_js('misc/collapse.js');
+  global $user;
+  $obj = $variables['object'];
+  $repository = $obj->repository;
+  // label/title
+  $variables['label'] = $obj->label;
+  if ($obj->label) {
+    drupal_set_title($obj->label);
+  }
+  $variables['theme_hook_suggestions'][] = 'niu_artfl__' . str_replace(':', '_', $obj->id);
+
+  // Default viewer.
+  $variables['artfl'] = theme('artfl', array('path' => "islandora/object/{$obj->id}/datastream/OBJ/view", 'attributes' => array('class' => 'niu-artful-content')));
+
+  $xml = simplexml_load_string($obj['DC']->content);
+  if ($xml) {
+    $results = $xml->xpath('//text()[normalize-space()]/..');
+    $results = array_map(function($o) { return array($o->getName(), (string) $o); }, $results);
+
+    $params = array(
+      'header' => array(),
+      'rows' => $results,
+      'attributes' => array(),
+      'caption' => '',
+      'colgroups' => array(),
+      'sticky' => FALSE,
+      'empty' => ''
+    );
+    $variables['metadata_table'] = theme('table', $params);
+  }
+  else {
+    $variables['metadata_table'] = '';
+  }
+  $datastreams = array();
+  foreach ($obj as $ds) {
+    try {
+      $datastreams[] = array(
+        $ds->id, // DSID
+        l($ds->label, islandora_datastream_get_url($ds, 'download')), // Download
+        islandora_datastream_get_human_readable_size($ds), // Size
+        $ds->mimetype,
+        $ds->createdDate->format("Y-m-d"),
+      );
+    }
+    catch (RepositoryException $e) {
+    }
+  }
+  $params = array(
+    'header' => array(t('ID'), t('Label'), t('Size'), t('Mimetype'), t('Created')),
+    'rows' => $datastreams,
+    'attributes' => array(),
+    'caption' => '',
+    'colgroups' => array(),
+    'sticky' => FALSE,
+    'empty' => '',
+  );
+  $variables['datastream_table'] = theme('table', $params);
+}
+
