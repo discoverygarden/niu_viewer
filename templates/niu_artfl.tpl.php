@@ -2,7 +2,7 @@
 /**
 * @file
 *
-* This is the template file for the object page for basic image
+* This is the template file for the object page for the NIU Viewer
 *
 * @TODO: add documentation about file and available variables
 * @TODO: drupal_set_title shouldn't be called here
@@ -17,10 +17,20 @@
     <?php print($metadata_table); ?>
   </div>
 </div>
-<fieldset class="collapsible collapsed" style="display: block; clear:both">
-  <legend><span class="fieldset-legend"><?php print t('File details'); ?></span></legend>
+<fieldset class="collapsible collapsed niu-metadata islandora">
+  <legend><span class="fieldset-legend"><?php print t('Details'); ?></span></legend>
   <div class="fieldset-wrapper">
-    <?php print($datastream_table); ?>
+    <dl class="islandora-inline-metadata niu-fields">
+      <?php $row_field = 0; ?>
+      <?php foreach($dc_array as $key => $value): ?>
+        <dt class="<?php print $value['class']; ?><?php print $row_field == 0 ? ' first' : ''; ?>">
+          <?php print $value['label']; ?>
+        </dt>
+        <dd class="<?php print $value['class']; ?><?php print $row_field == 0 ? ' first' : ''; ?>">
+          <?php print $value['value']; ?>
+        </dd>
+        <?php $row_field++; ?>
+      <?php endforeach; ?>
+    </dl>
   </div>
 </fieldset>
-

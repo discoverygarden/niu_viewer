@@ -3,4 +3,24 @@
 .niu-artfl-content {
   border: 1px solid #ddd;
 }
-
+dl.niu-fields {
+    width: 100%;
+}
+.niu-metadata {
+    clear: both;
+    display: block;
+}
+.niu-metadata dt {
+    font-weight: bold;
+    padding-right: 0;
+    text-align: right;
+}
+.niu-metadata dd {
+    padding-left: 40px;
+}
+.niu-metadata dt, .niu-metadata dd {
+    border-top: 1px solid #E5E5E5;
+}
+.niu-metadata dt.first, .niu-metadata dd.first {
+    border-top: 0 none;
+}
