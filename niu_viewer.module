@@ -22,7 +22,7 @@ function niu_viewer_theme($existing, $type, $theme, $path) {
 
 function _niu_viewer_master_view_object($object, $page_number, $page_size) {
   $output = theme('niu_artfl', array('object' => $object));
-  $output = $object['OBJ']->content . $output;
+  $output = utf8_encode($object['OBJ']->content) . $output;
   return array('' => $output);
 }
 
