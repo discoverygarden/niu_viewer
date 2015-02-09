@@ -13,24 +13,18 @@
   <div class="niu-artfl">
     <?php print($artfl); ?>
   </div>
-  <div class="niu-metadata">
-    <?php print($metadata_table); ?>
+  <div class="niu-artfl-object-metadata niu-metadata">
+    <?php print $description; ?>
+    <?php if ($parent_collections): ?>
+      <div>
+        <h2><?php print t('In collections'); ?></h2>
+        <ul>
+          <?php foreach ($parent_collections as $collection): ?>
+        <li><?php print l($collection->label, "islandora/object/{$collection->id}"); ?></li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+    <?php endif; ?>
+    <?php print $metadata; ?>
   </div>
 </div>
-<fieldset class="collapsible collapsed niu-metadata islandora">
-  <legend><span class="fieldset-legend"><?php print t('Details'); ?></span></legend>
-  <div class="fieldset-wrapper">
-    <dl class="islandora-inline-metadata niu-fields">
-      <?php $row_field = 0; ?>
-      <?php foreach($dc_array as $key => $value): ?>
-        <dt class="<?php print $value['class']; ?><?php print $row_field == 0 ? ' first' : ''; ?>">
-          <?php print $value['label']; ?>
-        </dt>
-        <dd class="<?php print $value['class']; ?><?php print $row_field == 0 ? ' first' : ''; ?>">
-          <?php print $value['value']; ?>
-        </dd>
-        <?php $row_field++; ?>
-      <?php endforeach; ?>
-    </dl>
-  </div>
-</fieldset>

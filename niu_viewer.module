@@ -21,9 +21,7 @@ function niu_viewer_theme($existing, $type, $theme, $path) {
 }
 
 function _niu_viewer_master_view_object($object, $page_number, $page_size) {
-  $output = theme('niu_artfl', array('object' => $object));
-  $output = utf8_encode($object['OBJ']->content) . $output;
-  return array('' => $output);
+  return array('' => theme('niu_artfl', array('object' => $object)));
 }
 
 function niu_viewer_niu_objects_cmodel_islandora_view_object($object, $page_number, $page_size) {
@@ -35,63 +33,22 @@ function niu_viewer_niu_amarch_cmodel_islandora_view_object($object, $page_numbe
 }
 
 function niu_viewer_preprocess_niu_artfl(&$variables) {
-  module_load_include('inc', 'islandora', 'includes/datastream');
+  module_load_include('inc', 'islandora', 'includes/metadata');
   drupal_add_js('misc/form.js');
   drupal_add_js('misc/collapse.js');
-  global $user;
   $obj = $variables['object'];
-  $repository = $obj->repository;
-  // label/title
-  $variables['label'] = $obj->label;
-  if ($obj->label) {
-    drupal_set_title($obj->label);
-  }
+
   $variables['theme_hook_suggestions'][] = 'niu_artfl__' . str_replace(':', '_', $obj->id);
 
-  // Default viewer.
-  $variables['artfl'] = theme('artfl', array('path' => "islandora/object/{$obj->id}/datastream/OBJ/view", 'attributes' => array('class' => 'niu-artful-content')));
-
-  $xml = simplexml_load_string($obj['DC']->content);
-  if ($xml) {
-    $results = $xml->xpath('//text()[normalize-space()]/..');
-    $results = array_map(function($o) { return array($o->getName(), (string) $o); }, $results);
-
-    $params = array(
-      'header' => array(),
-      'rows' => $results,
-      'attributes' => array(),
-      'caption' => '',
-      'colgroups' => array(),
-      'sticky' => FALSE,
-      'empty' => ''
-    );
-    $variables['metadata_table'] = theme('table', $params);
+  if (isset($obj['OBJ']) && islandora_datastream_access(ISLANDORA_VIEW_OBJECTS, $obj['OBJ'])) {
+    $variables['artfl'] = utf8_encode($obj['OBJ']->content);
   }
   else {
-    $variables['metadata_table'] = '';
-  }
-  $datastreams = array();
-  foreach ($obj as $ds) {
-    try {
-      $datastreams[] = array(
-        $ds->id, // DSID
-        l($ds->label, islandora_datastream_get_url($ds, 'download')), // Download
-        islandora_datastream_get_human_readable_size($ds), // Size
-        $ds->mimetype,
-        $ds->createdDate->format("Y-m-d"),
-      );
-    }
-    catch (RepositoryException $e) {
-    }
+    $variables['artfl'] = '';
   }
 
-  try {
-    $dc = $obj['DC']->content;
-    $dc_object = DublinCore::importFromXmlString($dc);
-  } catch (Exception $e) {
-    drupal_set_message(t('Error retrieving object %s %t', array('%s' => $islandora_object->id, '%t' => $e->getMessage())), 'error', FALSE);
-  }
-  $variables['islandora_dublin_core'] = isset($dc_object) ? $dc_object : NULL;
-  $variables['dc_array'] = isset($dc_object) ? $dc_object->asArray() : array();
+  $variables['parent_collections'] = islandora_get_parents_from_rels_ext($obj);
+  $variables['metadata'] = islandora_retrieve_metadata_markup($obj);
+  $variables['description'] = islandora_retrieve_description_markup($obj);
 }
 
